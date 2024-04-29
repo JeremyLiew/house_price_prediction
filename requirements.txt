@@ -3,4 +3,3 @@ joblib
 numpy
 scikit-learn
 geopy
-geopy-distance
