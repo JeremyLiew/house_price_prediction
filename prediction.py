@@ -4,6 +4,9 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import numpy as np
 
+# Initialize geolocator
+geolocator = Nominatim(user_agent="my_geocoder")
+
 # Function to calculate Haversine distance
 def haversine_distance(lat1, lon1, lat2, lon2):
     # Convert latitude and longitude from degrees to radians
@@ -59,9 +62,6 @@ st.title('House Price Predictor')
 
 # User input field for the address
 house_address = st.text_input('Enter the address of the house:')
-
-# Initialize geolocator
-geolocator = Nominatim(user_agent="my_geocoder")
 
 ocean_lat = 37.7749
 ocean_lon = -122.4194
