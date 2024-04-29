@@ -4,6 +4,53 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import folium
 
+# Function to calculate Haversine distance
+def haversine_distance(lat1, lon1, lat2, lon2):
+    # Convert latitude and longitude from degrees to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    radius = 6371  # Radius of the Earth in kilometers
+    distance = radius * c
+    return distance
+
+# Define a function to geocode addresses
+def geocode_address(address):
+    location = geolocator.geocode(address)
+    if location:
+        return location.latitude, location.longitude
+    else:
+        return None
+
+# Function to calculate distance from house to ocean
+def calculate_distance_to_ocean(house_coords, ocean_data):
+    min_distance = float('inf')
+    nearest_ocean = None
+    for _, ocean_row in ocean_data.iterrows():
+        ocean_coord = (ocean_row['Latitude'], ocean_row['Longitude'])
+        distance = geodesic(house_coords, ocean_coord).miles
+        if distance < min_distance:
+            min_distance = distance
+            nearest_ocean = ocean_coord
+    return min_distance, nearest_ocean
+
+# Function to determine ocean proximity based on distance
+def determine_ocean_proximity(distance):
+    if distance < 23.69:
+        return 3  # NEAR BAY
+    elif distance < 515.38:
+        return 0  # <1H OCEAN
+    elif distance < 846.99:
+        return 1  # INLAND
+    elif distance < 1319.59:
+        return 4  # NEAR OCEAN
+    else:
+        return 2  # ISLAND
+
 # Load the trained Random Forest model
 randomForestModel = load('random_forest.joblib')
 
