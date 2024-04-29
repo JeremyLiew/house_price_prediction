@@ -2,54 +2,7 @@ import streamlit as st
 from joblib import load
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
-import numpy as np
-
-# Function to calculate Haversine distance
-def haversine_distance(lat1, lon1, lat2, lon2):
-    # Convert latitude and longitude from degrees to radians
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-
-    # Haversine formula
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    radius = 6371  # Radius of the Earth in kilometers
-    distance = radius * c
-    return distance
-
-# Define a function to geocode addresses
-def geocode_address(address):
-    location = geolocator.geocode(address)
-    if location:
-        return location.latitude, location.longitude
-    else:
-        return None
-
-# Function to calculate distance from house to ocean
-def calculate_distance_to_ocean(house_coords, ocean_data):
-    min_distance = float('inf')
-    nearest_ocean = None
-    for _, ocean_row in ocean_data.iterrows():
-        ocean_coord = (ocean_row['Latitude'], ocean_row['Longitude'])
-        distance = geodesic(house_coords, ocean_coord).miles
-        if distance < min_distance:
-            min_distance = distance
-            nearest_ocean = ocean_coord
-    return min_distance, nearest_ocean
-
-# Function to determine ocean proximity based on distance
-def determine_ocean_proximity(distance):
-    if distance < 23.69:
-        return 3  # NEAR BAY
-    elif distance < 515.38:
-        return 0  # <1H OCEAN
-    elif distance < 846.99:
-        return 1  # INLAND
-    elif distance < 1319.59:
-        return 4  # NEAR OCEAN
-    else:
-        return 2  # ISLAND
+import folium
 
 # Load the trained Random Forest model
 randomForestModel = load('random_forest.joblib')
@@ -60,26 +13,30 @@ st.title('House Price Predictor')
 # User input field for the address
 house_address = st.text_input('Enter the address of the house:')
 
-# Initialize geolocator
-geolocator = Nominatim(user_agent="my_geocoder")
-
+# Ocean coordinates
 ocean_lat = 37.7749
 ocean_lon = -122.4194
+
+# Initialize geolocator
+geolocator = Nominatim(user_agent="my_geocoder")
 
 # Predict house price
 if st.button('Predict Price'):
     # Geocode the address to get latitude and longitude
     latitude, longitude = geocode_address(house_address)
     if latitude and longitude:
+        # Calculate distance to the ocean
+        distance_to_ocean = geodesic((latitude, longitude), (ocean_lat, ocean_lon)).miles
+        st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
 
-        ocean_coords = (ocean_lat, ocean_lon)  # San Francisco, CA
-        house_coords = (latitude, longitude)
-        distance_to_ocean = geodesic(house_coords, ocean_coords).miles
-
-        # Determine ocean proximity encoded based on distance
-        ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
-
+        # Display map with house location and ocean coordinates
+        m = folium.Map(location=[latitude, longitude], zoom_start=10)
+        folium.Marker([latitude, longitude], popup="House Location").add_to(m)
+        folium.Marker([ocean_lat, ocean_lon], popup="Ocean").add_to(m)
+        st.write(m)
+        
         # Combine features
+        ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
         input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
 
         # Predict house prices
