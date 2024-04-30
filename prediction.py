@@ -100,15 +100,17 @@ rmse_gp = np.sqrt(mean_squared_error(y_test, y_pred_gp))
 mae_gp = mean_absolute_error(y_test, y_pred_gp)
 mse_gp = mean_squared_error(y_test, y_pred_gp)
 
-# Make predictions
-y_pred_lr = linearRegressionModel.predict(X_test_scaled)
+# Make predictions for Linear Regression with only ocean proximity feature
+test_features_lr = X_test_scaled[:, 2].reshape(-1, 1)
+y_pred_lr = linearRegressionModel.predict(test_features_lr)
 
-# Calculate metrics
+# Calculate metrics for Linear Regression
 mape_lr = MAPE(y_test, y_pred_lr)
 r2_lr = r2_score(y_test, y_pred_lr)
 rmse_lr = np.sqrt(mean_squared_error(y_test, y_pred_lr))
 mae_lr = mean_absolute_error(y_test, y_pred_lr)
 mse_lr = mean_squared_error(y_test, y_pred_lr)
+
 
 # Title of the Streamlit app
 st.title('House Price Predictor')
