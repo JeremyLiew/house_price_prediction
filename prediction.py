@@ -398,6 +398,3 @@ if st.button('Predict Price'):
         st.write(metrics_df)
     else:
         st.error("Address not found. Please enter a valid address.")
-        st.write(metrics_df)
-    else:
-        st.error("Address not found. Please enter a valid address.")
