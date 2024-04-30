@@ -76,39 +76,42 @@ if st.button('Predict Price'):
     latitude, longitude = geocode_address(house_address)
     if latitude and longitude:
 
-        ocean_coords = (ocean_lat, ocean_lon)  # San Francisco, CA
-        house_coords = (latitude, longitude)
-        distance_to_ocean = geodesic(house_coords, ocean_coords).miles
+        try:
 
-        # Determine ocean proximity encoded based on distance
-        ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
+            ocean_coords = (ocean_lat, ocean_lon)  # San Francisco, CA
+            house_coords = (latitude, longitude)
+            distance_to_ocean = geodesic(house_coords, ocean_coords).miles
 
-        # Combine features
-        input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
+            # Determine ocean proximity encoded based on distance
+            ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
 
-        # Predict house prices using Random Forest
-        predicted_price_rf = randomForestModel.predict(input_features)
-        predicted_actual_price_rf = predicted_price_rf * 10000  # Convert to actual price
+            # Combine features
+            input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
 
-        # Predict house prices using Gaussian Process
-        predicted_price_gp = gaussianProcessModel.predict(input_features)
-        predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
+            # Predict house prices using Random Forest
+            predicted_price_rf = randomForestModel.predict(input_features)
+            predicted_actual_price_rf = predicted_price_rf * 10000  # Convert to actual price
 
-        # Predict house prices using Linear Regression
-        predicted_price_lr = linearRegressionModel.predict(input_features)
-        predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
+            # Predict house prices using Gaussian Process
+            predicted_price_gp = gaussianProcessModel.predict(input_features)
+            predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
 
-        # Display predictions and accuracy
-        st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
-        st.write("\n====================\n")
-        st.write("Random Forest Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_rf[0]:,.2f}")
+            # Predict house prices using Linear Regression
+            predicted_price_lr = linearRegressionModel.predict(input_features)
+            predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
 
-        st.write("Gaussian Process Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_gp[0]:,.2f}")
+            # Display predictions and accuracy
+            st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
+            st.write("\n====================\n")
+            st.write("Random Forest Regression:")
+            st.write(f"Predicted house price: ${predicted_actual_price_rf[0]:,.2f}")
 
-        st.write("Linear Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_lr[0]:,.2f}")
+            st.write("Gaussian Process Regression:")
+            st.write(f"Predicted house price: ${predicted_actual_price_gp[0]:,.2f}")
 
+            st.write("Linear Regression:")
+            st.write(f"Predicted house price: ${predicted_actual_price_lr[0]:,.2f}")
+        except geopy.exc.GeocoderUnavailable:
+            st.error("Geocoder service is currently unavailable. Please try again later.")
     else:
         st.error("Address not found. Please enter a valid address.")
