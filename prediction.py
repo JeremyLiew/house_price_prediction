@@ -3,6 +3,21 @@ from joblib import load
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import numpy as np
+import pandas as pd
+
+# Load the original dataset
+original_data = pd.read_csv('cleaned_house_data.csv')  # Change the file path to your dataset
+
+sample_data_ocean = house_data_ocean.sample(n=100, random_state=42)
+X = sample_data_ocean.drop(columns=['median_house_value','ocean_proximity'])
+y = sample_data_ocean['median_house_value'] / 10000
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
 
 # Function to calculate Haversine distance
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -58,6 +73,36 @@ randomForestModel = load('random_forest.joblib')
 gaussianProcessModel = load('ocean_gaussian_process.joblib')
 linearRegressionModel = load('linear_regression.joblib')
 
+# Make predictions
+y_pred_rf = randomForestModel.predict(X_test_scaled)
+
+# Calculate metrics
+mape_rf = MAPE(y_test, y_pred_rf)
+r2_rf = r2_score(y_test, y_pred_rf)
+rmse_rf = np.sqrt(mean_squared_error(y_test, y_pred_rf))
+mae_rf = mean_absolute_error(y_test, y_pred_rf)
+mse_rf = mean_squared_error(y_test, y_pred_rf)
+
+# Make predictions
+y_pred_gp = gaussianProcessModel.predict(X_test_scaled)
+
+# Calculate metrics
+mape_gp = MAPE(y_test, y_pred_gp)
+r2_gp = r2_score(y_test, y_pred_gp)
+rmse_gp = np.sqrt(mean_squared_error(y_test, y_pred_gp))
+mae_gp = mean_absolute_error(y_test, y_pred_gp)
+mse_gp = mean_squared_error(y_test, y_pred_gp)
+
+# Make predictions
+y_pred_lr = linearRegressionModel.predict(X_test_scaled)
+
+# Calculate metrics
+mape_lr = MAPE(y_test, y_pred_lr)
+r2_lr = r2_score(y_test, y_pred_lr)
+rmse_lr = np.sqrt(mean_squared_error(y_test, y_pred_lr))
+mae_lr = mean_absolute_error(y_test, y_pred_lr)
+mse_lr = mean_squared_error(y_test, y_pred_lr)
+
 # Title of the Streamlit app
 st.title('House Price Predictor')
 
@@ -94,20 +139,54 @@ if st.button('Predict Price'):
         predicted_price_gp = gaussianProcessModel.predict(input_features)
         predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
 
+        # Combine features for linear regression
+        input_features_lr = np.array([[ocean_proximity_encoded]])
+
         # Predict house prices using Linear Regression
-        predicted_price_lr = linearRegressionModel.predict(input_features)
+        predicted_price_lr = linearRegressionModel.predict(input_features_lr)
         predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
 
         # Display predictions and accuracy
         st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
         st.write("\n====================\n")
-        st.write("Random Forest Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_rf[0]:,.2f}")
 
-        st.write("Gaussian Process Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_gp[0]:,.2f}")
+        data = {
+            "Algorithm": ["Random Forest", "Gaussian Process", "Linear Regression"],
+            "Predicted Price": [
+                predicted_actual_price_rf[0],
+                predicted_actual_price_gp[0],
+                predicted_actual_price_lr[0]
+            ],
+            "MAPE": [
+                mape_rf,
+                mape_gp,
+                mape_lr
+            ],
+            "R-Squared": [
+                r2_rf,
+                r2_gp,
+                r2_lr
+            ],
+            "RMSE": [
+                rmse_rf,
+                rmse_gp,
+                rmse_lr
+            ],
+            "MAE": [
+                mae_rf,
+                mae_gp,
+                mae_lr
+            ],
+            "MSE": [
+                mse_rf,
+                mse_gp,
+                mse_lr
+            ]
+        }
 
-        st.write("Linear Regression:")
-        st.write(f"Predicted house price: ${predicted_actual_price_lr[0]:,.2f}")
+        metrics_df = pd.DataFrame(data)
+
+        # Display the metrics in a table
+        st.write(metrics_df)
     else:
         st.error("Address not found. Please enter a valid address.")
