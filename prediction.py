@@ -8,9 +8,9 @@ import pandas as pd
 # Load the original dataset
 original_data = pd.read_csv('cleaned_house_data.csv')  # Change the file path to your dataset
 
-sample_data_ocean = house_data_ocean.sample(n=100, random_state=42)
-X = sample_data_ocean.drop(columns=['median_house_value','ocean_proximity'])
-y = sample_data_ocean['median_house_value'] / 10000
+sample_data = original_data.sample(n=100, random_state=42)
+X = sample_data.drop(columns=['median_house_value','ocean_proximity'])
+y = sample_data['median_house_value'] / 10000
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Standardize features
