@@ -4,9 +4,6 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 import numpy as np
 
-# Initialize geolocator
-geolocator = Nominatim(user_agent="my_geocoder")
-
 # Function to calculate Haversine distance
 def haversine_distance(lat1, lon1, lat2, lon2):
     # Convert latitude and longitude from degrees to radians
@@ -57,11 +54,18 @@ def determine_ocean_proximity(distance):
 # Load the trained Random Forest model
 randomForestModel = load('random_forest.joblib')
 
+# for comparison
+gaussianProcessModel = load('ocean_gaussian_process.joblib')
+linearRegressionModel = load('linear_regression.joblib')
+
 # Title of the Streamlit app
 st.title('House Price Predictor')
 
 # User input field for the address
 house_address = st.text_input('Enter the address of the house:')
+
+# Initialize geolocator
+geolocator = Nominatim(user_agent="my_geocoder")
 
 ocean_lat = 37.7749
 ocean_lon = -122.4194
@@ -82,10 +86,29 @@ if st.button('Predict Price'):
         # Combine features
         input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
 
-        # Predict house prices
-        predicted_price = randomForestModel.predict(input_features)
-        predicted_actual_price = predicted_price * 10000  # Convert to actual price
+        # Predict house prices using Random Forest
+        predicted_price_rf = randomForestModel.predict(input_features)
+        predicted_actual_price_rf = predicted_price_rf * 10000  # Convert to actual price
+
+        # Predict house prices using Gaussian Process
+        predicted_price_gp = gaussianProcessModel.predict(input_features)
+        predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
+
+        # Predict house prices using Linear Regression
+        predicted_price_lr = linearRegressionModel.predict(input_features)
+        predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
+
+        # Display predictions and accuracy
         st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
-        st.write(f"Predicted house price: ${predicted_actual_price[0]:,.2f}")
+        st.write("\n====================\n")
+        st.write("Random Forest Regression:")
+        st.write(f"Predicted house price: ${predicted_actual_price_rf[0]:,.2f}")
+
+        st.write("Gaussian Process Regression:")
+        st.write(f"Predicted house price: ${predicted_actual_price_gp[0]:,.2f}")
+
+        st.write("Linear Regression:")
+        st.write(f"Predicted house price: ${predicted_actual_price_lr[0]:,.2f}")
+
     else:
         st.error("Address not found. Please enter a valid address.")
