@@ -5,6 +5,7 @@ from geopy.distance import geodesic
 import numpy as np
 import pandas as pd
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.model_selection import train_test_split
 
 # Load the original dataset
 original_data = pd.read_csv('cleaned_house_data.csv')  # Change the file path to your dataset
