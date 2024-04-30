@@ -22,6 +22,9 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
+def MAPE(Y_actual, Y_pred):
+    mape = np.mean(np.abs((Y_actual - Y_pred) / Y_actual)) * 100
+    return mape
 
 # Function to calculate Haversine distance
 def haversine_distance(lat1, lon1, lat2, lon2):
