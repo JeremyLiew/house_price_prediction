@@ -102,8 +102,8 @@ mse_lr = mean_squared_error(y_test, y_pred_lr)
 st.title('House Price Predictor')
 
 # User input fields for latitude and longitude
-latitude = st.number_input('Enter the latitude of the house:', value=37.7749, step=0.0001)
-longitude = st.number_input('Enter the longitude of the house:', value=-122.4194, step=0.0001)
+latitude = st.number_input('Enter the latitude of the house:')
+longitude = st.number_input('Enter the longitude of the house:')
 
 ocean_lat = 37.7749
 ocean_lon = -122.4194
@@ -183,4 +183,4 @@ if st.button('Predict Price'):
         st.write(metrics_df)
 
     else:
-        st.error("Address not found. Please enter a valid address.")
+        st.error("Location not found. Please enter a valid coordinates.")
