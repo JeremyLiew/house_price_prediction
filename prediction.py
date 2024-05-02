@@ -101,88 +101,84 @@ mse_lr = mean_squared_error(y_test, y_pred_lr)
 # Title of the Streamlit app
 st.title('House Price Predictor')
 
-# User input field for the address
-house_address = st.text_input('Enter the address of the house:')
-
-# Initialize geolocator
-geolocator = Nominatim(user_agent="my_geocoder")
+# User input fields for latitude and longitude
+latitude = st.number_input('Enter the latitude of the house:', value=37.7749, step=0.0001)
+longitude = st.number_input('Enter the longitude of the house:', value=-122.4194, step=0.0001)
 
 ocean_lat = 37.7749
 ocean_lon = -122.4194
 
 # Predict house price
 if st.button('Predict Price'):
-    # Geocode the address to get latitude and longitude
-    latitude, longitude = geocode_address(house_address)
-    if latitude and longitude:
 
-        ocean_coords = (ocean_lat, ocean_lon)  # San Francisco, CA
-        house_coords = (latitude, longitude)
-        distance_to_ocean = geodesic(house_coords, ocean_coords).miles
+    ocean_coords = (ocean_lat, ocean_lon)  # San Francisco, CA
+    house_coords = (latitude, longitude)
+    distance_to_ocean = geodesic(house_coords, ocean_coords).miles
 
-        # Determine ocean proximity encoded based on distance
-        ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
+    # Determine ocean proximity encoded based on distance
+    ocean_proximity_encoded = determine_ocean_proximity(distance_to_ocean)
 
-        # Combine features
-        input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
+    # Combine features
+    input_features = np.array([[longitude, latitude, ocean_proximity_encoded]])
 
-        # Predict house prices using Random Forest
-        predicted_price_rf = randomForestModel.predict(input_features)
-        predicted_actual_price_rf = predicted_price_rf * 10000  # Convert to actual price
+    # Predict house prices using Random Forest
+    predicted_price_rf = randomForestModel.predict(input_features)
+    predicted_actual_price_rf = predicted_price_rf * 10000  # Convert to actual price
 
-        # Predict house prices using Gaussian Process
-        predicted_price_gp = gaussianProcessModel.predict(input_features)
-        predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
+    # Predict house prices using Gaussian Process
+    predicted_price_gp = gaussianProcessModel.predict(input_features)
+    predicted_actual_price_gp = predicted_price_gp * 10000  # Convert to actual price
 
-        # Combine features for linear regression
-        input_features_lr = np.array([[ocean_proximity_encoded]])
+    # Combine features for linear regression
+    input_features_lr = np.array([[ocean_proximity_encoded]])
 
-        # Predict house prices using Linear Regression
-        predicted_price_lr = linearRegressionModel.predict(input_features_lr)
-        predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
+    # Predict house prices using Linear Regression
+    predicted_price_lr = linearRegressionModel.predict(input_features_lr)
+    predicted_actual_price_lr = predicted_price_lr * 10000  # Convert to actual price
 
-        # Display predictions and accuracy
-        st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
-        st.write("\n====================\n")
+    # Display predictions and accuracy
+    st.write(f"Distance to the ocean: {distance_to_ocean:.2f} miles")
+    st.write("\n====================\n")
 
-        data = {
-            "Algorithm": ["Random Forest", "Gaussian Process", "Linear Regression"],
-            "Predicted Price": [
-                predicted_actual_price_rf[0],
-                predicted_actual_price_gp[0],
-                predicted_actual_price_lr[0]
-            ],
-            "MAPE": [
-                mape_rf,
-                mape_gp,
-                mape_lr
-            ],
-            "R-Squared": [
-                r2_rf,
-                r2_gp,
-                r2_lr
-            ],
-            "RMSE": [
-                rmse_rf,
-                rmse_gp,
-                rmse_lr
-            ],
-            "MAE": [
-                mae_rf,
-                mae_gp,
-                mae_lr
-            ],
-            "MSE": [
-                mse_rf,
-                mse_gp,
-                mse_lr
-            ]
-        }
+    data = {
+        "Algorithm": ["Random Forest", "Gaussian Process", "Linear Regression"],
+        "Predicted Price": [
+            predicted_actual_price_rf[0],
+            predicted_actual_price_gp[0],
+            predicted_actual_price_lr[0]
+        ],
+        "MAPE": [
+            mape_rf,
+            mape_gp,
+            mape_lr
+        ],
+        "R-Squared": [
+            r2_rf,
+            r2_gp,
+            r2_lr
+        ],
+        "RMSE": [
+            rmse_rf,
+            rmse_gp,
+            rmse_lr
+        ],
+        "MAE": [
+            mae_rf,
+            mae_gp,
+            mae_lr
+        ],
+        "MSE": [
+            mse_rf,
+            mse_gp,
+            mse_lr
+        ]
+    }
 
-        metrics_df = pd.DataFrame(data)
+    metrics_df = pd.DataFrame(data)
 
-        # Display the metrics in a table
-        metrics_df['MAPE'] = metrics_df['MAPE'].apply(lambda x: f"{x:.2f}%")
-        st.write(metrics_df)
-    else:
-        st.error("Address not found. Please enter a valid address.")
+    # Display the metrics in a table
+    metrics_df['MAPE'] = metrics_df['MAPE'].apply(lambda x: f"{x:.2f}%")
+    st.write(metrics_df)
+
+else:
+    st.error("Address not found. Please enter a valid address.")
