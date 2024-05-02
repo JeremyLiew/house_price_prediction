@@ -26,20 +26,6 @@ def MAPE(Y_actual, Y_pred):
     mape = np.mean(np.abs((Y_actual - Y_pred) / Y_actual)) * 100
     return mape
 
-# Function to calculate Haversine distance
-def haversine_distance(lat1, lon1, lat2, lon2):
-    # Convert latitude and longitude from degrees to radians
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-
-    # Haversine formula
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    radius = 6371  # Radius of the Earth in kilometers
-    distance = radius * c
-    return distance
-
 # Define a function to geocode addresses
 def geocode_address(address):
     location = geolocator.geocode(address)
